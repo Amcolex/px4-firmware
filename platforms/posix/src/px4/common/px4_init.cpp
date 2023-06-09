@@ -62,9 +62,9 @@ int px4_platform_init(void)
 	// Give muorb some time to setup the DSP
 	usleep(100000);
 
-	param_init();
+	//param_init();
 
-	px4_log_initialize();
+	//px4_log_initialize();
 
 	return PX4_OK;
 }
