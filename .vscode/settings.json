@@ -15,7 +15,7 @@
         "cmake.buildDirectory": "${workspaceFolder}/build/${variant:CONFIG}",
         "cmake.configureOnOpen": true,
         "cmake.ctest.parallelJobs": 1,
-        "cmake.skipConfigureIfCachePresent": true,
+        "cmake.skipConfigureIfCachePresent": false,
         "cmakeExplorer.buildDir": "${workspaceFolder}/build/px4_sitl_test",
         "cmakeExplorer.parallelJobs": 1,
         "cmakeExplorer.suiteDelimiter": "-",
