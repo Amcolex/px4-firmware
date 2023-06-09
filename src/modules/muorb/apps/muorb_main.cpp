@@ -58,7 +58,7 @@ muorb_init()
 	if (channel && channel->Initialize(enable_debug)) {
 		uORB::Manager::get_instance()->set_uorb_communicator(channel);
 
-		if (channel->Test()) { return OK; }
+		return OK;
 	}
 
 	return -EINVAL;

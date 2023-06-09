@@ -98,8 +98,45 @@
 #	evaluating to false.
 #
 #=============================================================================
-
 cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
+
+# DEBUG STUFF
+# print all cmake parameters
+message(STATUS "CMake Arguments:")
+
+get_cmake_property(_variableNames VARIABLES)
+list (SORT _variableNames)
+foreach (_variableName ${_variableNames})
+    message(STATUS "${_variableName}=${${_variableName}}")
+endforeach()
+
+message("Environment variables:")
+
+# Get all environment variables
+execute_process(COMMAND ${CMAKE_COMMAND} -E environment RESULT_VARIABLE result OUTPUT_VARIABLE output)
+
+# Split the output into a list
+string(REPLACE "\n" ";" output_list "${output}")
+
+# Iterate over the list and print each one
+foreach(env_var ${output_list})
+    if(NOT "${env_var}" STREQUAL "")
+        message(STATUS "${env_var}")
+    endif()
+endforeach()
+
+# set env variable for QRB5
+set(ENV{LD_LIBRARY_PATH} "/home/4.1.0.4/tools/libusb/")
+set(ENV{QNX_HOST} "/home/4.1.0.4/tools/qnx/qnx_700/host/linux/x86_64/")
+set(ENV{ARM_CROSS_GCC_ROOT} "/home/4.1.0.4/tools/linaro64")
+set(ENV{HEXAGON_TOOLS_ROOT} "/home/4.1.0.4/tools/HEXAGON_Tools/8.4.05/Tools")
+set(ENV{HEXAGON_ARM_SYSROOT} "/home/4.1.0.4/tools/linaro64/aarch64-linux-gnu/libc")
+set(ENV{DEFAULT_HEXAGON_TOOLS_ROOT} "/home/4.1.0.4/tools/HEXAGON_Tools/8.4.05")
+set(ENV{QNX_TARGET} "/home/4.1.0.4/tools/qnx/qnx_700/target/qnx7/")
+set(ENV{ANDROID_ROOT_DIR} "/home/4.1.0.4/tools/android-ndk-r19c")
+set(ENV{HEXAGON_SDK_ROOT} "/home/4.1.0.4")
+set(ENV{SDK_SETUP_ENV} "Done")
+set(ENV{DEFAULT_TOOLS_VARIANT} "toolv84")
 
 set(PX4_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE FILEPATH "PX4 source directory" FORCE)
 set(PX4_BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}" CACHE FILEPATH "PX4 binary directory" FORCE)

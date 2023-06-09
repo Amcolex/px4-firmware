@@ -46,8 +46,10 @@
 #include <lib/parameters/param.h>
 #include <px4_platform_common/px4_work_queue/WorkQueueManager.hpp>
 #include <qurt.h>
-
 #include "hrt_work.h"
+
+#define FARF_LOW 1
+#include <HAP_farf.h>
 
 // Definition of test to run when in muorb test mode
 static MUORBTestType test_to_run;
@@ -74,6 +76,14 @@ const uint32_t aggregator_thread_priority = 240;
 const uint32_t aggregator_stack_size = 8096;
 char aggregator_stack[aggregator_stack_size];
 
+// test thread
+qurt_thread_t farf_test_tid;
+qurt_thread_attr_t farf_test_attr;
+const uint32_t farf_test_thread_priority = 240;
+const uint32_t farf_test_stack_size = 8096;
+char farf_test_stack[farf_test_stack_size];
+
+#if 0
 static void aggregator_thread_func(void *ptr)
 {
 	PX4_INFO("muorb aggregator thread running");
@@ -88,6 +98,25 @@ static void aggregator_thread_func(void *ptr)
 	}
 
 	qurt_thread_exit(QURT_EOK);
+}
+#endif
+
+static void farf_test_thread_func(void *ptr)
+{
+	PX4_INFO("farf test thread running");
+	uint8_t tx_data[2] = {0x75 | 0x80, 0x00};
+	uint8_t rx_data[2];
+
+
+	muorb_func_ptrs._config_spi_bus_func_t();
+	while (true) {
+		FARF(LOW, "farf test thread running");
+		int flag = muorb_func_ptrs._spi_transfer_func_t(0,tx_data,rx_data,2);
+		FARF(LOW, "spi transfer flag: %d, Who am I result %d", flag, rx_data[1]);
+
+		qurt_timer_sleep(500000);
+	}
+
 }
 
 int16_t uORB::ProtobufChannel::topic_advertised(const char *messageName)
@@ -241,6 +270,7 @@ __END_DECLS
 
 int px4muorb_orb_initialize(fc_func_ptrs *func_ptrs, int32_t clock_offset_us)
 {
+	FARF(LOW, "muorb init\n");
 	hrt_set_absolute_time_offset(clock_offset_us);
 
 	if (! px4muorb_orb_initialized) {
@@ -269,60 +299,68 @@ int px4muorb_orb_initialize(fc_func_ptrs *func_ptrs, int32_t clock_offset_us)
 			return -1;
 		}
 
-		hrt_init();
+		// hrt_init();
 
 		uORB::Manager::initialize();
 		uORB::Manager::get_instance()->set_uorb_communicator(
 			uORB::ProtobufChannel::GetInstance());
 
-		param_init();
+		// param_init();
 
-		px4::WorkQueueManagerStart();
+		// px4::WorkQueueManagerStart();
 
 		uORB::ProtobufChannel::GetInstance()->RegisterSendHandler(muorb_func_ptrs.topic_data_func_ptr);
 
-		// Configure the I2C driver function pointers
-		device::I2C::configure_callbacks(muorb_func_ptrs._config_i2c_bus_func_t, muorb_func_ptrs._set_i2c_address_func_t,
-						 muorb_func_ptrs._i2c_transfer_func_t);
+		// // Configure the I2C driver function pointers
+		// device::I2C::configure_callbacks(muorb_func_ptrs._config_i2c_bus_func_t, muorb_func_ptrs._set_i2c_address_func_t,
+		// 				 muorb_func_ptrs._i2c_transfer_func_t);
 
-		// Configure the SPI driver function pointers
-		device::SPI::configure_callbacks(muorb_func_ptrs._config_spi_bus_func_t, muorb_func_ptrs._spi_transfer_func_t);
+		//Configure the SPI driver function pointers
+		// device::SPI::configure_callbacks(muorb_func_ptrs._config_spi_bus_func_t, muorb_func_ptrs._spi_transfer_func_t);
 
-		// Configure the UART driver function pointers
-		configure_uart_callbacks(muorb_func_ptrs.open_uart_func_t, muorb_func_ptrs.write_uart_func_t,
-					 muorb_func_ptrs.read_uart_func_t);
+		// // Configure the UART driver function pointers
+		// configure_uart_callbacks(muorb_func_ptrs.open_uart_func_t, muorb_func_ptrs.write_uart_func_t,
+		// 			 muorb_func_ptrs.read_uart_func_t);
 
-		// Initialize the interrupt callback registration
-		register_interrupt_callback_initalizer(muorb_func_ptrs.register_interrupt_callback);
+		// // Initialize the interrupt callback registration
+		// register_interrupt_callback_initalizer(muorb_func_ptrs.register_interrupt_callback);
 
-		work_queues_init();
-		hrt_work_queue_init();
+		// work_queues_init();
+		// hrt_work_queue_init();
 
-		const char *argv[3] = { "slpi", "start" };
-		int argc = 2;
 
-		// Make sure that argv has a NULL pointer in the end.
-		argv[argc] = NULL;
+		// const char *argv[3] = { "slpi", "start" };
+		// int argc = 2;
 
-		if (slpi_main(argc, (char **) argv)) {
-			PX4_ERR("slpi failed in %s", __FUNCTION__);
-		}
+		// //Make sure that argv has a NULL pointer in the end.
+		// argv[argc] = NULL;
+		// if (slpi_main(argc, (char **) argv)) {
+		// 	PX4_ERR("slpi failed in %s", __FUNCTION__);
+		// }
 
-		// Setup the thread to monitor for topic aggregator timeouts
-		qurt_thread_attr_init(&aggregator_attr);
-		qurt_thread_attr_set_stack_addr(&aggregator_attr, aggregator_stack);
-		qurt_thread_attr_set_stack_size(&aggregator_attr, aggregator_stack_size);
-		char thread_name[QURT_THREAD_ATTR_NAME_MAXLEN];
-		strncpy(thread_name, "PX4_muorb_agg", QURT_THREAD_ATTR_NAME_MAXLEN);
-		qurt_thread_attr_set_name(&aggregator_attr, thread_name);
-		qurt_thread_attr_set_priority(&aggregator_attr, aggregator_thread_priority);
-		(void) qurt_thread_create(&aggregator_tid, &aggregator_attr, aggregator_thread_func, NULL);
+		//Setup the thread to monitor for topic aggregator timeouts
+		// qurt_thread_attr_init(&aggregator_attr);
+		// qurt_thread_attr_set_stack_addr(&aggregator_attr, aggregator_stack);
+		// qurt_thread_attr_set_stack_size(&aggregator_attr, aggregator_stack_size);
+		// char thread_name[QURT_THREAD_ATTR_NAME_MAXLEN];
+		// strncpy(thread_name, "PX4_muorb_agg", QURT_THREAD_ATTR_NAME_MAXLEN);
+		// qurt_thread_attr_set_name(&aggregator_attr, thread_name);
+		// qurt_thread_attr_set_priority(&aggregator_attr, aggregator_thread_priority);
+		// (void) qurt_thread_create(&aggregator_tid, &aggregator_attr, aggregator_thread_func, NULL);
+
+
+		qurt_thread_attr_init(&farf_test_attr);
+		qurt_thread_attr_set_stack_addr(&farf_test_attr, farf_test_stack);
+		qurt_thread_attr_set_stack_size(&farf_test_attr, farf_test_stack_size);
+		qurt_thread_attr_set_priority(&farf_test_attr, farf_test_thread_priority);
+		(void) qurt_thread_create(&farf_test_tid, &farf_test_attr, farf_test_thread_func, NULL);
 
 		px4muorb_orb_initialized = true;
 
 		if (_px4_muorb_debug) { PX4_INFO("px4muorb_orb_initialize called"); }
 	}
 
+	FARF(LOW, "Return of muorb Init \n");
 	return 0;
 }
 
@@ -342,6 +380,7 @@ void run_test(MUORBTestType test)
 
 int px4muorb_topic_advertised(const char *topic_name)
 {
+	FARF(LOW, "muorb init\n");
 	if (IS_MUORB_TEST(topic_name)) {
 		run_test(ADVERTISE_TEST_TYPE);
 
@@ -371,6 +410,7 @@ int px4muorb_topic_advertised(const char *topic_name)
 
 int px4muorb_add_subscriber(const char *topic_name)
 {
+	FARF(LOW, "muorb add sub\n");
 	if (IS_MUORB_TEST(topic_name)) {
 		run_test(SUBSCRIBE_TEST_TYPE);
 
@@ -407,6 +447,7 @@ int px4muorb_add_subscriber(const char *topic_name)
 
 int px4muorb_remove_subscriber(const char *topic_name)
 {
+	FARF(LOW, "muorb remove sub\n");
 	if (IS_MUORB_TEST(topic_name)) {
 		run_test(UNSUBSCRIBE_TEST_TYPE);
 
@@ -438,6 +479,7 @@ int px4muorb_remove_subscriber(const char *topic_name)
 int px4muorb_send_topic_data(const char *topic_name, const uint8_t *data,
 			     int data_len_in_bytes)
 {
+	FARF(LOW, "muorb send topic data\n");
 	if (IS_MUORB_TEST(topic_name)) {
 		// Validate the test data received
 		bool test_passed = true;
