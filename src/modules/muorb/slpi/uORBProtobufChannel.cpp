@@ -110,7 +110,6 @@ static void farf_test_thread_func(void *ptr)
 
 	muorb_func_ptrs._config_spi_bus_func_t();
 	while (true) {
-		FARF(LOW, "farf test thread running");
 		int flag = muorb_func_ptrs._spi_transfer_func_t(0,tx_data,rx_data,2);
 		FARF(LOW, "spi transfer flag: %d, Who am I result %d", flag, rx_data[1]);
 
@@ -302,14 +301,14 @@ int px4muorb_orb_initialize(fc_func_ptrs *func_ptrs, int32_t clock_offset_us)
 		// hrt_init();
 
 		uORB::Manager::initialize();
-		uORB::Manager::get_instance()->set_uorb_communicator(
-			uORB::ProtobufChannel::GetInstance());
+		// uORB::Manager::get_instance()->set_uorb_communicator(
+		// 	uORB::ProtobufChannel::GetInstance());
 
 		// param_init();
 
 		// px4::WorkQueueManagerStart();
 
-		uORB::ProtobufChannel::GetInstance()->RegisterSendHandler(muorb_func_ptrs.topic_data_func_ptr);
+		// uORB::ProtobufChannel::GetInstance()->RegisterSendHandler(muorb_func_ptrs.topic_data_func_ptr);
 
 		// // Configure the I2C driver function pointers
 		// device::I2C::configure_callbacks(muorb_func_ptrs._config_i2c_bus_func_t, muorb_func_ptrs._set_i2c_address_func_t,

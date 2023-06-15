@@ -123,6 +123,10 @@ int SITL_MAIN(int argc, char **argv)
 int main(int argc, char **argv)
 #endif
 {
+
+	px4::init_once();
+	return PX4_OK;
+
 	bool is_client = false;
 	bool pxh_off = false;
 	bool server_is_running = false;

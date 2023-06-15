@@ -46,25 +46,25 @@ extern "C" { int muorb_init(); }
 
 int px4_platform_init(void)
 {
-	hrt_init();
+	//hrt_init();
 
-	px4::WorkQueueManagerStart();
+	//px4::WorkQueueManagerStart();
 
 	//Put sleeper in here to allow wq to finish initializing before param_init is called
-	usleep(10000);
+	//usleep(10000);
 
-	uorb_start();
+	//uorb_start();
 
 #if not defined(CONFIG_ARCH_BOARD_PX4_SITL)
 	muorb_init();
 #endif
 
 	// Give muorb some time to setup the DSP
-	usleep(100000);
+	//usleep(100000);
 
-	param_init();
+	//param_init();
 
-	px4_log_initialize();
+	//px4_log_initialize();
 
 	return PX4_OK;
 }

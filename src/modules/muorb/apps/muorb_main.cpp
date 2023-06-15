@@ -34,6 +34,7 @@
 #include <string.h>
 #include "uORBAppsProtobufChannel.hpp"
 #include "uORB/uORBManager.hpp"
+#include "fc_sensor.h"
 
 extern "C" {
 	__EXPORT int muorb_main(int argc, char *argv[]);
@@ -41,6 +42,25 @@ extern "C" {
 }
 
 static bool enable_debug = false;
+
+static void receive_cb(const char *topic,
+			      const uint8_t *data,
+			      uint32_t length_in_bytes)
+{
+
+}
+static void advertise_cb(const char *topic)
+{
+
+}
+static void add_subscription_cb(const char *topic)
+{
+
+}
+static void remove_subscription_cb(const char *topic)
+{
+
+}
 
 int
 muorb_main(int argc, char *argv[])
@@ -51,15 +71,17 @@ muorb_main(int argc, char *argv[])
 int
 muorb_init()
 {
-	uORB::AppsProtobufChannel *channel = uORB::AppsProtobufChannel::GetInstance();
+	fc_callbacks funcs = {&receive_cb,&advertise_cb,&add_subscription_cb,&remove_subscription_cb};
+	fc_sensor_initialize(enable_debug,&funcs);
+	// uORB::AppsProtobufChannel *channel = uORB::AppsProtobufChannel::GetInstance();
 
-	PX4_INFO("Got muorb init command");
+	// PX4_INFO("Got muorb init command");
 
-	if (channel && channel->Initialize(enable_debug)) {
-		uORB::Manager::get_instance()->set_uorb_communicator(channel);
+	// if (channel && channel->Initialize(enable_debug)) {
+	// 	uORB::Manager::get_instance()->set_uorb_communicator(channel);
 
-		return OK;
-	}
+	// 	return OK;
+	// }
 
-	return -EINVAL;
+	return OK;
 }
